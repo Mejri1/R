@@ -5,6 +5,28 @@ missing_values
 # Remove rows with missing values
 data <- data[complete.cases(data), ]
 
+
+#Check Date Format: Confirm that the 'Date' column is in the correct date format.
+library(lubridate)
+is.Date(data$Date)
+
+data$Date <- as.Date(data$Date)
+
+# Check unique values in the 'Date' column
+length(unique(data$Date)) == nrow(data)
+
+#Check for Negative Values: Ensure that there are no negative values in numerical columns where it's not appropriate (e.g., 'Open', 'High', 'Low', 'Close', 'Adj.Close', 'Volume').
+any(data$Open < 0)
+any(data$High < 0)
+any(data$Low < 0)
+any(data$Close < 0)
+any(data$Adj.Close < 0)
+any(data$Volume < 0)
+
+#Check Consistency: Ensure that 'High' values are greater than or equal to 'Low' values
+any(data$High < data$Low)
+
+
 # Summary statistics for the 'Close' column after cleaning
 summary(data$Close)
 
