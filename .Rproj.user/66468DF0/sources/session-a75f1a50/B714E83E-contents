@@ -34,7 +34,7 @@ summary(data$Close)
 data
 
 # Summary statistics for the 'Close' column
-summary(data$Close)
+summary(data)
 
 # Boxplot to visualize outliers
 boxplot(data$Close, main = "Boxplot of Close Prices")

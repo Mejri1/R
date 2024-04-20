@@ -10,8 +10,8 @@ selected_companies <- c("American Airlines Group Inc.", "Apple Inc.", "Advanced 
 # Filter data for selected companies
 selected_data <- data[data$Company %in% selected_companies, ]
 
-# Filter data for the last 6 months
-six_months_ago <- Sys.Date() - (6*30)
+# Filter data for the last 2 years
+six_months_ago <- as.Date("2022-04-111")
 selected_data <- selected_data[selected_data$Date >= six_months_ago, ]
 
 # Set up layout for plots
@@ -38,8 +38,8 @@ ma_periods <- c(10, 20, 50)  # Moving average periods
 
 # Create plots
 par(mfrow = c(3, 1))  # Set up plotting layout
-for (period in ma_periods) {
-  for (company in selected_companies) {
+for (company in selected_companies) {
+  for (period in ma_periods) {
     subset_data <- selected_data[selected_data$Company == company, ]
     ma_column_name <- paste("MA", period, "Days")
     subset_data[[ma_column_name]] <- stats::filter(subset_data$Close, rep(1/period, period), sides=2)
@@ -66,6 +66,7 @@ ggplot(selected_data, aes(x = Open, y = Close)) +
   geom_smooth(method = "lm", se = FALSE) +
   labs(x = "Open Price", y = "Close Price", title = "Relationship between Open and Close Prices")
 
+
 # Perform econometric modeling
 model <- lm(Close ~ Open, data = selected_data)
 print(summary(model))
@@ -88,14 +89,14 @@ model <- lm(Close ~ Open + High + Low + Volume, data = selected_data)
 # Summary of the model
 summary(model)
 
-
+library(dplyr)
 # Group by 'Company' and calculate total volume
-total_volume <- selected_data %>%
+total_volume <- data %>%
   group_by(Company) %>%
   summarise(Total_Volume = sum(Volume)) %>%
   arrange(desc(Total_Volume))  # Sort by total volume in descending order
 
-# Select the top 10 companies
+# Select the topdata# Select the top 10 companies
 top_10_companies <- total_volume %>%
   top_n(10, Total_Volume)
 
@@ -108,7 +109,6 @@ barplot(top_10_companies$Total_Volume,
         xlab = "Company",
         ylab = "Total Volume",
         main = "Top 10 Companies with Highest Total Volume in Last 6 Months",
-        col = rainbow(nrow(top_10_companies)),  # Custom color palette
         border = "black",
         ylim = c(0, max(total_volume$Total_Volume) * 1.2),
         las = 2,  # Rotate company names if needed for better visualization
