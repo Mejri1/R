@@ -1,0 +1,32 @@
+{
+    "id": "C19086BB",
+    "path": "C:/Users/Omar/Desktop/R/quarto test.qmd",
+    "project_path": "quarto test.qmd",
+    "type": "quarto_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1713640449236.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "rmdVisualMode": "true",
+        "rmdVisualWrapConfigured": "true",
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "19,346",
+        "scrollLine": "10",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "1",
+        "rmdVisualModeLocation": "725:250.39999389648438"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1713640788,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1713640788969,
+    "read_only": false,
+    "read_only_alternatives": []
+}

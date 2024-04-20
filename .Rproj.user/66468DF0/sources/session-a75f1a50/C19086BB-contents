@@ -1,0 +1,20 @@
+---
+title: "Projet d'Analyse des Données Économiques avec R"
+author: "Votre Nom"
+date: "20 avril 2024"
+output:
+  quarto::pdf_document:
+    toc: true
+---
+
+# Introduction
+
+## Description du Projet
+
+Notre projet tourne autour de la collecte, du nettoyage, de l'analyse et de la visualisation des données économiques en utilisant R. Nous avons choisi de nous concentrer sur des ensembles de données liés à des entreprises de renom telles qu'Amazon, Microsoft et d'autres, car elles offrent des informations précieuses sur le paysage économique. Nous explorerons divers indicateurs économiques, tendances et modèles pour extraire des insights significatifs pouvant éclairer les processus de prise de décision.
+
+# Collecte des Données
+
+## Source des données : Yahoo Finance - Les plus actifs
+
+Les données utilisées dans ce projet proviennent de la page "Les plus actifs" de Yahoo Finance. Cette source fournit une liste complète des actions les plus échangées, comprenant des détails tels que la date, les prix d'ouverture, de clôture, les plus hauts et les plus bas, ainsi que le volume de transactions et le nom de l'entreprise associée.
