@@ -37,7 +37,7 @@ for (company in selected_companies) {
 ma_periods <- c(10, 20, 50)  # Moving average periods
 
 # Create plots
-par(mfrow = c(3, 1))  # Set up plotting layout
+par(mfrow = c(1, 1))  # Set up plotting layout
 for (company in selected_companies) {
   for (period in ma_periods) {
     subset_data <- selected_data[selected_data$Company == company, ]
@@ -116,3 +116,4 @@ barplot(top_10_companies$Total_Volume,
         cex.lab = 1.2,  # Adjust font size for axis labels
         cex.main = 1.5,  # Adjust font size for main title
         width = 0.5)  # Adjust bar width as needed
+
