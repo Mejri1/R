@@ -1,10 +1,14 @@
 ---
 title: "Projet d'Analyse des Données Économiques avec R"
 author: "Haithem Farjallah et Omar Majri"
-format: html
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
 ---
 
-# I. Introduction
+#  Introduction
 
 ## Description du Projet
 
@@ -16,7 +20,7 @@ Notre projet tourne autour de la collecte, du nettoyage, de l'analyse et de la v
 
 Les données utilisées dans ce projet proviennent de la page "Les plus actifs" de Yahoo Finance. Cette source fournit une liste complète des actions les plus échangées, comprenant des détails tels que la date, les prix d'ouverture, de clôture, les plus hauts et les plus bas, ainsi que le volume de transactions et le nom de l'entreprise associée.
 
-## II. Netoyage des donées :
+##  Netoyage des donées :
 
 1.  **Vérification des valeurs manquantes :**
 
@@ -102,23 +106,22 @@ Les données utilisées dans ce projet proviennent de la page "Les plus actifs" 
 
 ![](images/MovingAverage50daysAmazon.png)
 
-7.  **Calcul de la corrélation :** En calculant la corrélation entre les prix d'ouverture et de clôture, ainsi qu'entre les prix les plus élevés et les prix les plus bas, nous avons pu visualiser ces relations à l'aide de graphiques de dispersion, ce qui nous a donné des informations sur les liens entre différentes variables.
+6.  **Calcul de la corrélation :** En calculant la corrélation entre les prix d'ouverture et de clôture, ainsi qu'entre les prix les plus élevés et les prix les plus bas, nous avons pu visualiser ces relations à l'aide de graphiques de dispersion, ce qui nous a donné des informations sur les liens entre différentes variables.
 
-![](images/correlationOpen&Close.png)
-
-![](images/relationOpen&Close.png)
+![](images/correlationOpenandClose.png)
+![](images/relationOpenandClose.png)
 
 `corrélation entre les prix les plus élevés et les prix les plus bas :`
 
-![](images/correlationHigh&low.png)
+![](images/correlationHighandlow.png)
 
 ![](images/HighvsLow.png)
 
-8.  **Groupement et analyse du volume des ventes :** Nous avons groupé les données par société pour calculer le volume total des ventes et identifier les dix sociétés ayant le volume le plus élevé au cours des six derniers mois, ce qui est essentiel pour comprendre l'activité économique de ces entreprises.
+7.  **Groupement et analyse du volume des ventes :** Nous avons groupé les données par société pour calculer le volume total des ventes et identifier les dix sociétés ayant le volume le plus élevé au cours des six derniers mois, ce qui est essentiel pour comprendre l'activité économique de ces entreprises.
 
 ![](images/top10Companies.png){fig-align="center" width="534"}
 
-# III. Prediction : 
+# III. Prediction :
 
 1.  **Filtrage des données pour AMD :**
 
