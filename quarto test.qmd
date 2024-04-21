@@ -8,7 +8,7 @@ format:
     colorlinks: true
 ---
 
-#  Introduction
+# Introduction
 
 ## Description du Projet
 
@@ -20,131 +20,354 @@ Notre projet tourne autour de la collecte, du nettoyage, de l'analyse et de la v
 
 Les données utilisées dans ce projet proviennent de la page "Les plus actifs" de Yahoo Finance. Cette source fournit une liste complète des actions les plus échangées, comprenant des détails tels que la date, les prix d'ouverture, de clôture, les plus hauts et les plus bas, ainsi que le volume de transactions et le nom de l'entreprise associée.
 
-##  Netoyage des donées :
+```{r echo=FALSE}
+# Import libraries
+library(readr)
+
+# Specify the path to the CSV file
+file_path <- "most_active.csv"
+
+# Load the dataset
+data <- read.csv(file_path, header = TRUE)
+
+# Display the summary statistics of the dataset
+summary(data)
+
+# Description of the dataset columns:
+# - Open: Opening price of the stock. The price at which the first transaction of the day occurred.
+# - High: The highest price reached by the stock during the trading day.
+# - Low: The lowest price reached by the stock during the trading day.
+# - Close: Closing price of the stock. The price at which the last transaction of the day occurred.
+# - Adj.Close: Adjusted closing price of the stock. It accounts for any distributions and corporate actions that occurred before the opening of the next day.
+# - Volume: Trading volume of the stock, i.e., the total number of shares traded during the trading day.
+
+```
+
+# Netoyage des donées :
 
 1.  **Vérification des valeurs manquantes :**
 
     Nous avons commencé par vérifier et supprimer les lignes contenant des valeurs manquantes à l'aide de la fonction **`complete.cases`**. Cela garantit l'intégrité de nos données en éliminant les observations incomplètes.
 
+```{r}
+# Check for missing values
+missing_values <- sum(is.na(data))
+print(missing_values)
+# Remove rows with missing values
+data <- data[complete.cases(data), ]
+
+```
+
 2.  **Vérification du format de la date :**
 
     Ensuite, nous avons utilisé la bibliothèque lubridate pour confirmer que la colonne 'Date' était au bon format de date, et nous avons converti cette colonne en format de date avec **`as.Date`**. Cela assure la cohérence dans la gestion des dates pour nos analyses ultérieures.
+
+```{r}
+
+#Check Date Format: Confirm that the 'Date' column is in the correct date format.
+library(lubridate)
+is.Date(data$Date)
+data$Date <- as.Date(data$Date)
+# Check unique values in the 'Date' column
+length(unique(data$Date)) == nrow(data)
+```
 
 3.  **Vérification des valeurs négatives :**
 
     Nous avons également vérifié qu'il n'y avait pas de valeurs négatives dans les colonnes numériques pertinentes telles que 'Open', 'High', 'Low', 'Close', 'Adj.Close', et 'Volume'.
 
+```{r}
+#Check for Negative Values: Ensure that there are no negative values in numerical columns where it's not appropriate (e.g., 'Open', 'High', 'Low', 'Close', 'Adj.Close', 'Volume').
+any(data$Open < 0)
+any(data$High < 0)
+any(data$Low < 0)
+any(data$Close < 0)
+any(data$Adj.Close < 0)
+any(data$Volume < 0)
+```
+
 4.  **Vérification de la cohérence des valeurs 'High' et 'Low' :**
 
     Une étape cruciale a été de garantir la cohérence des données en vérifiant que les valeurs dans la colonne 'High' étaient toujours supérieures ou égales aux valeurs correspondantes dans la colonne 'Low'.
+
+```{r}
+#Check Consistency: Ensure that 'High' values are greater than or equal to 'Low' values
+any(data$High < data$Low)
+```
 
 5.  **Résumé statistique des données nettoyées :**
 
     Après ce nettoyage initial, nous avons généré un résumé statistique pour la colonne 'Close', ce qui nous a donné un aperçu des propriétés centrales et de la dispersion de nos données.
 
-    ![](images/boxplotClosePrices.png)
+```{r}
+
+# Summary statistics for the 'Close' column after cleaning
+summary(data$Close)
+
+
+# Summary statistics for the 'Close' column
+summary(data)
+
+# Boxplot to visualize outliers
+boxplot(data$Close, main = "Boxplot of Close Prices")
+
+# Calculate the Interquartile Range (IQR)
+Q1 <- quantile(data$Close, 0.25)
+Q3 <- quantile(data$Close, 0.75)
+IQR <- Q3 - Q1
+
+# Define the lower and upper bounds for outlier detection
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Identify outliers
+outliers <- data$Close[data$Close < lower_bound | data$Close > upper_bound]
+
+# Remove outliers
+data_clean <- data[!(data$Close %in% outliers), ]
+```
 
 6.  **Visualisation des valeurs aberrantes (outliers) :**
 
     Pour détecter et traiter les valeurs aberrantes, nous avons créé un diagramme en boîte pour visualiser la distribution des prix de clôture après le nettoyage. Cela nous a permis de mieux comprendre et gérer les valeurs extrêmes qui pourraient affecter nos analyses.
 
-    ![](images/boxplotClosePriceCleaned.png)
+```{r warning=FALSE}
 
-# III.Analyse des donnees
+# Summary statistics for the cleaned dataset
+summary(data_clean$Close)
+
+# Boxplot of the cleaned dataset
+boxplot(data_clean$Close, main = "Boxplot of Close Prices (Cleaned)")
+
+
+```
+
+# Analyse des donnees
 
 1.  **Chargement des bibliothèques nécessaires :**
 
     Nous avons commencé par charger les bibliothèques essentielles telles que ggplot2, lmtest et dplyr pour effectuer nos analyses et visualisations.
 
+```{r}
+# Load required library
+library(ggplot2)
+
+# Load necessary libraries
+library(lmtest)  # For econometric modeling
+library(dplyr)
+```
+
 2.  **Conversion de la colonne "Date" :**
 
     Nous avons converti la colonne "Date" en type de données Date pour faciliter la manipulation temporelle de nos données.
 
-3.  **Filtrage des données :** Les données ont été filtrées pour inclure uniquement les sociétés sélectionnées et les données des six derniers mois, ce qui nous a permis de nous concentrer sur des données récentes et pertinentes.
+```{r}
+# Convert 'Date' column to Date type
+data$Date <- as.Date(data$Date)
+
+```
+
+3.  **Filtrage des données :**
+
+    Les données ont été filtrées pour inclure uniquement les sociétés sélectionnées et les données des six derniers mois, ce qui nous a permis de nous concentrer sur des données récentes et pertinentes.
+
+    ```{r}
+    # Specify the companies to include in the plots
+    selected_companies <- c("American Airlines Group Inc.", "Apple Inc.", "Advanced Micro Devices, Inc.", "Amazon.com, Inc.")
+
+    # Filter data for selected companies
+    selected_data <- data[data$Company %in% selected_companies, ]
+
+    # Filter data for the last 2 years
+    six_months_ago <- as.Date("2022-04-111")
+    selected_data <- selected_data[selected_data$Date >= six_months_ago, ]
+    ```
 
 4.  **Création de graphiques individuels :**
 
     Des graphiques ont été créés pour chaque société sélectionnée, montrant l'évolution du prix de clôture et du volume de ventes, offrant ainsi une perspective visuelle sur les performances des entreprises étudiées.
 
-    ![](images/ClosingPriceCurevCompanies.png)
+```{r}
+# Set up layout for plots
+par(mfrow = c(2, 2))
 
-    ![](images/SlaesVolumeCompanies.png)
+# Create individual plots for each selected company - Closing Price
+for (company in selected_companies) {
+  subset_data <- selected_data[selected_data$Company == company, ]
+  plot(subset_data$Date, subset_data$Close, type = "l", 
+       main = paste("Closing Price Curve for", company),
+       xlab = "Date", ylab = "Closing Price")
+}
+
+# Create individual plots for sales volume for each selected company
+for (company in selected_companies) {
+  subset_data <- selected_data[selected_data$Company == company, ]
+  plot(subset_data$Date, subset_data$Volume / 1e6, type = "l", 
+       main = paste("Sales Volume for", company),
+       xlab = "Date", ylab = "Volume (Millions)")
+}
+```
 
 5.  **Calcul des moyennes mobiles :**
 
     Nous avons calculé les moyennes mobiles pour chaque société et représenté graphiquement les prix de clôture ajustés et les moyennes mobiles pour observer les tendances à long terme.
 
-`A.American Airlines Group Inc :`
+```{r}
+# Calculate moving averages for each company
+ma_periods <- c(10, 20, 50)  # Moving average periods
 
-![](images/MovingAverage10daysUS.png)
+# Create plots
+par(mfrow = c(1, 1))  # Set up plotting layout
+for (company in selected_companies) {
+  for (period in ma_periods) {
+    subset_data <- selected_data[selected_data$Company == company, ]
+    ma_column_name <- paste("MA", period, "Days")
+    subset_data[[ma_column_name]] <- stats::filter(subset_data$Close, rep(1/period, period), sides=2)
+    
+    # Plot adjusted close prices and moving averages
+    plot(subset_data$Date, subset_data$Close, type = "l", col = "blue", xlab = "Date", ylab = "Price",
+         main = paste("Adjusted Close Prices and Moving Average for", period, "Days"))
+    lines(subset_data$Date, subset_data[[ma_column_name]], col = "red", lty = "dashed")
+    legend("topright", legend = c("Adjusted Close", paste("MA", period, "Days")), 
+           col = c("blue", "red"), lty = c("solid", "dashed"), cex = 0.8)
+  }
+}
 
-![](images/MovingAverage20DaysUS.png)
+```
 
-![](images/MovingAverage50daysUS.png)
+6.  **Calcul de la corrélation :**
 
-`B.Apple Inc :`
+    En calculant la corrélation entre les prix d'ouverture et de clôture, ainsi qu'entre les prix les plus élevés et les prix les plus bas, nous avons pu visualiser ces relations à l'aide de graphiques de dispersion, ce qui nous a donné des informations sur les liens entre différentes variables.
 
-![](images/MovingAverage10daysApple.png)
+```{r}
 
-![](images/MovingAverage20daysApple.png)
+# Calculate correlation between Open and Close prices
+correlation <- cor(selected_data$Open, selected_data$Close)
+print(paste("Correlation between Open and Close prices:", correlation))
 
-![](images/MovingAverage50daysApple.png)
+# Plot the relationship between Open and Close prices
+ggplot(selected_data, aes(x = Open, y = Close)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Open Price", y = "Close Price", title = "Relationship between Open and Close Prices")
 
-`C.Advanced Micro Devices, Inc :`
 
-![](images/MovingAverage10daysMD.png)
+# Perform econometric modeling
+model <- lm(Close ~ Open, data = selected_data)
+print(summary(model))
 
-![](images/MovingAverage20daysMD.png)
+# Perform heteroscedasticity test
+bptest(model)
 
-![](images/MovingAverage50daysMD.png)
+# Calculate correlation between High and Low columns
+correlation <- cor(selected_data$High, selected_data$Low)
 
-`D.Amazon.com, Inc :`
+# Plot High vs. Low
+plot(selected_data$High, selected_data$Low, xlab = "High", ylab = "Low", main = "High vs. Low", pch = 20)
 
-![](images/MovingAverage10daysAmazon.png)
+# Print the correlation coefficient
+print(correlation)
 
-![](images/MovingAverage20daysAmazon.png)
+# Fit an econometric model
+model <- lm(Close ~ Open + High + Low + Volume, data = selected_data)
 
-![](images/MovingAverage50daysAmazon.png)
-
-6.  **Calcul de la corrélation :** En calculant la corrélation entre les prix d'ouverture et de clôture, ainsi qu'entre les prix les plus élevés et les prix les plus bas, nous avons pu visualiser ces relations à l'aide de graphiques de dispersion, ce qui nous a donné des informations sur les liens entre différentes variables.
-
-![](images/correlationOpenandClose.png)
-![](images/relationOpenandClose.png)
-
-`corrélation entre les prix les plus élevés et les prix les plus bas :`
-
-![](images/correlationHighandlow.png)
-
-![](images/HighvsLow.png)
+# Summary of the model
+summary(model)
+```
 
 7.  **Groupement et analyse du volume des ventes :** Nous avons groupé les données par société pour calculer le volume total des ventes et identifier les dix sociétés ayant le volume le plus élevé au cours des six derniers mois, ce qui est essentiel pour comprendre l'activité économique de ces entreprises.
 
-![](images/top10Companies.png){fig-align="center" width="534"}
+```{r}
+# Group by 'Company' and calculate total volume
+total_volume <- data %>%
+  group_by(Company) %>%
+  summarise(Total_Volume = sum(Volume)) %>%
+  arrange(desc(Total_Volume))  # Sort by total volume in descending order
 
-# III. Prediction :
+# Select the topdata# Select the top 10 companies
+top_10_companies <- total_volume %>%
+  top_n(10, Total_Volume)
+
+# Increase plot size
+options(repr.plot.width = 10, repr.plot.height = 6)  # Adjust width and height as needed
+
+# Plot bar chart with custom design
+barplot(top_10_companies$Total_Volume, 
+        names.arg = top_10_companies$Company,
+        xlab = "Company",
+        ylab = "Total Volume",
+        main = "Top 10 Companies with Highest Total Volume in Last 6 Months",
+        border = "black",
+        ylim = c(0, max(total_volume$Total_Volume) * 1.2),
+        las = 2,  # Rotate company names if needed for better visualization
+        cex.names = 0.8,  # Adjust font size for company names
+        cex.lab = 1.2,  # Adjust font size for axis labels
+        cex.main = 1.5,  # Adjust font size for main title
+        width = 0.5)  # Adjust bar width as needed
+
+```
+
+#  Prediction :
 
 1.  **Filtrage des données pour AMD :**
 
-    Les données ont été filtrées pour inclure uniquement les entrées liées à AMD, une étape préalable à la prédiction spécifique pour cette entreprise.
+    Les données ont été filtrées pour inclurex uniquement les entrées liées à AMD, une étape préalable à la prédiction spécifique pour cette entreprise.
+
+```{r}
+# Filter data for AMD
+amd_data <- data[data$Company == "Advanced Micro Devices, Inc.", ]
+```
 
 2.  **Imputation des valeurs manquantes :**
 
     Nous avons remplacé les valeurs manquantes dans la colonne "Close" par la moyenne des valeurs disponibles pour AMD, assurant ainsi la continuité des données nécessaires à la prédiction.
 
+```{r}
+# Impute missing values with mean for AMD
+amd_data$Close <- ifelse(is.na(amd_data$Close), mean(amd_data$Close, na.rm = TRUE), amd_data$Close)
+
+# Ensure 'amd_data' is sorted by date
+amd_data <- amd_data[order(amd_data$Date), ]
+```
+
 3.  **Ingénierie des fonctionnalités :**
 
     En créant des variables retardées basées sur les prix de clôture antérieurs, nous avons préparé nos données pour l'entraînement du modèle de prédiction.
+
+```{r}
+# Feature engineering: Create lagged variables for previous closing prices
+lagged_prices <- c(1, 2, 3, 4, 5)  # Lagged periods
+for (lag in lagged_prices) {
+  amd_data[[paste0("Close_lag", lag)]] <- lag(amd_data$Close, lag)
+}
+# Remove rows with NA values in lagged variables
+amd_data <- na.omit(amd_data)
+
+```
 
 4.  **Division des données et définition des caractéristiques :**
 
     Les données ont été divisées en ensembles d'entraînement et de test, avec la définition des caractéristiques à utiliser pour la prédiction et la variable cible, à savoir les prix de clôture.
 
+```{r}
+
+# Split the data into training and testing sets
+train_size <- 0.8  # 80% of data for training
+train_index <- 1:round(nrow(amd_data) * train_size)
+train_data <- amd_data[train_index, ]
+test_data <- amd_data[-train_index, ]
+
+# Define features and target variable
+features <- c("Close_lag1", "Close_lag2", "Close_lag3", "Close_lag4", "Close_lag5")
+target <- "Close"
+```
+
 5.  **Entraînement du modèle et évaluation :**
 
     Un modèle de forêt aléatoire a été entraîné en utilisant les données d'entraînement, puis utilisé pour prédire les prix de clôture sur les données de test. Enfin, les métriques de précision telles que MAE, MSE et RMSE ont été calculées pour évaluer la performance du modèle.
 
-6.  **Visualisation des prédictions :**
+```{r}
 
-    Les valeurs réelles et prédites des prix de clôture ont été visualisées sur un graphique pour comparer les prédictions au comportement réel, offrant ainsi une évaluation visuelle de l'efficacité de notre modèle de prédiction.
+```
 
-    ![](images/ActualVSPredictClosePrices.png)
+```

@@ -59,3 +59,4 @@ summary(data_clean$Close)
 
 # Boxplot of the cleaned dataset
 boxplot(data_clean$Close, main = "Boxplot of Close Prices (Cleaned)")
+
